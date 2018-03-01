@@ -8,15 +8,19 @@ import subprocess
 
 def kill_processes(processes):
     """Kill all process in a list of processes."""
-    print(processes)
     if not processes:
         return
-    for i, proc in enumerate(processes):
+    killed = []
+    for proc in processes:
         try:
+            print('Killing {}'.format(proc.pid))
             proc.terminate()
-            processes.pop(i)
-        except OSError:
+            killed.append(proc)
+        except OSError as err:
+            print(err)
             pass
+    for killed_proc in killed:
+        processes.remove(killed_proc)
     print('All servers have been murdered.')
 
 
@@ -36,14 +40,9 @@ for server in SERVERS:
     processes.append(subprocess.Popen(['python', server_path]))
 
 try:
-    # for proc in processes:
-    #     try:
-    #         proc[0].wait()
-    #     except Exception:
-    #         pass
     processes[0].wait()
 except KeyboardInterrupt:
     kill_processes(processes)
 
-# Incase we get down here but didn't kill everything.
+# In case we get down here but didn't kill everything.
 kill_processes(processes)
