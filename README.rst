@@ -4,6 +4,9 @@ Flask Demo (WIP)
 
 Just a quick example of how we could potentially start using Flask.
 
+I am trying to keep a similar setup to what we currently have with
+rhc as to keep switching between the 2 simpler.
+
 
 Organization
 ------------
