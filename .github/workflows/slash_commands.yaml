@@ -1,0 +1,31 @@
+name: Issue Comments
+
+on: pull_request_review_comment
+
+jobs:
+  check_comments:
+    runs-on: ubuntu-latest
+    name: Check comments for /rebuild
+    steps:
+      - name: Check for Command
+        id: command
+        continue-on-error: true
+        uses: xt0rted/slash-command-action@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          command: rebuild
+          reaction-type: "rocket"
+      - name: Configure AWS Credentials
+        if: steps.command.outputs.command-name
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.CC_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.CC_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - run: echo "REPOSITORY_NAME=$(echo $GITHUB_REPOSITORY | awk -F / '{print $2}')" >> $GITHUB_ENV
+        shell: bash
+      - name: Run CodeBuild
+        if: steps.command.outputs.command-name
+        uses: aws-actions/aws-codebuild-run-build@v1.0.3
+        with:
+          project-name: "${{ env.REPOSITORY_NAME }}"
