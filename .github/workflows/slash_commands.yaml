@@ -1,19 +1,20 @@
 name: Issue Comments
 
-on: pull_request_review_comment
+on:
+  pull_request_review_comment:
+    types:
+      - created
 
 jobs:
   check_comments:
     runs-on: ubuntu-latest
     name: Check comments for /rebuild
     steps:
-      - uses: khan/pull-request-comment-trigger@master
-        id: command
+      - name: Slash Command Dispatch
+        uses: peter-evans/slash-command-dispatch@v2
         with:
-          trigger: '/rebuild'
-          reaction: rocket
-        env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
+          token: ${{ secrets.NPM_TOKEN }}
+          commands: rebuild
       - name: Configure AWS Credentials
         if: steps.command.outputs.triggered == 'true'
         uses: aws-actions/configure-aws-credentials@v1
