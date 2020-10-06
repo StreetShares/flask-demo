@@ -6,7 +6,7 @@ on:
     types: [created]
 
 jobs:
-  hello:
+  rebuild_command:
     runs-on: ubuntu-latest
     steps:
       - uses: khan/pull-request-comment-trigger@master
@@ -19,7 +19,7 @@ jobs:
       - run: 'echo Found it!'
         if: steps.check.outputs.triggered == 'true'
       - name: Configure AWS Credentials
-        if: steps.command.outputs.triggered == 'true'
+        if: steps.check.outputs.triggered == 'true'
         uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.CC_AWS_ACCESS_KEY_ID }}
@@ -28,7 +28,7 @@ jobs:
       - run: echo "REPOSITORY_NAME=$(echo $GITHUB_REPOSITORY | awk -F / '{print $2}')" >> $GITHUB_ENV
         shell: bash
       - name: Run CodeBuild
-        if: steps.command.outputs.triggered == 'true'
+        if: steps.check.outputs.triggered == 'true'
         uses: aws-actions/aws-codebuild-run-build@v1.0.3
         with:
           project-name: "${{ env.REPOSITORY_NAME }}"
