@@ -14,6 +14,8 @@ jobs:
         with:
           trigger: '/rebuild'
           reaction: rocket
+        env:
+          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       - run: 'echo Found it!'
         if: steps.check.outputs.triggered == 'true'
 
