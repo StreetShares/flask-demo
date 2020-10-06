@@ -2,8 +2,6 @@ name: Pull Request Comment Trigger Example
 on:
   pull_request:
     types: [opened]
-  issue_comment:
-    types: [created]
 
 jobs:
   hello:
@@ -18,29 +16,17 @@ jobs:
           GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
       - run: 'echo Found it!'
         if: steps.check.outputs.triggered == 'true'
-
-  eyes:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: khan/pull-request-comment-trigger@master
-        id: check
+      - name: Configure AWS Credentials
+        if: steps.command.outputs.triggered == 'true'
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          trigger: '#look'
-          reaction: eyes
-        env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-      - run: 'echo Found it!'
-        if: steps.check.outputs.triggered == 'true'
-
-  rocket:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: khan/pull-request-comment-trigger@master
-        id: check
+          aws-access-key-id: ${{ secrets.CC_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.CC_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+      - run: echo "REPOSITORY_NAME=$(echo $GITHUB_REPOSITORY | awk -F / '{print $2}')" >> $GITHUB_ENV
+        shell: bash
+      - name: Run CodeBuild
+        if: steps.command.outputs.triggered == 'true'
+        uses: aws-actions/aws-codebuild-run-build@v1.0.3
         with:
-          trigger: '#deploy'
-          reaction: rocket
-        env:
-          GITHUB_TOKEN: '${{ secrets.GITHUB_TOKEN }}'
-      - run: 'echo Found it!'
-        if: steps.check.outputs.triggered == 'true'
+          project-name: "${{ env.REPOSITORY_NAME }}"
